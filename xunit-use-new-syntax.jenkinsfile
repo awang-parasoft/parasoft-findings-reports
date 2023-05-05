@@ -1,0 +1,36 @@
+pipeline {
+    agent any
+
+    post {
+        always {
+            recordIssues enabledForFailure: true,
+                         tool: parasoftFindings(
+                             pattern: '**/*static*.xml,**/*metric*.xml,**/*flowanalysis*.xml',
+                             skipSymbolicLinks: false,
+                             reportEncoding: 'UTF-8',
+                             localSettingsPath: 'settings/settings.properties',
+                             name: 'Parasoft Findings Dev'
+                         )
+
+            xunit (
+                tools: [
+                    [$class: 'ParasoftSOAtest9xType',
+                        pattern: '**/soatestDesktop9Functional*.xml,**/SOAtest_functional_10.6.1.xml,**/soatestDesktopCalc3.xml,**/soatestWar*.xml,**/soatest_10.5.0.xml,**/soatest_desktop_10_5_2.xml',
+                        skipNoTestFiles: false,
+                        failIfNotNew: false,
+                        deleteOutputFiles: true,
+                        stopProcessingIfError: true
+                    ],
+                    [$class: 'ParasoftType',
+                        pattern: '**/*unit*.xml',
+                        skipNoTestFiles: false,
+                        failIfNotNew: false,
+                        deleteOutputFiles: true,
+                        stopProcessingIfError: true
+                    ]
+                ]
+            )
+        }
+    }
+
+}
